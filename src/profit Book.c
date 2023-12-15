@@ -3,8 +3,8 @@
 #include <time.h>
 #include <unistd.h>
 #include <string.h>
+#include <windows.h>
 
-#define AUTHOR "Gokul B"
 #define AMOUNT_PAID_CHIEF 1400
 #define BIRIYANI_PRICE 110
 #define RICE_PRICE 50
@@ -17,13 +17,15 @@ int expense_func();
 void response(int);
 void help();
 void command_line();
+void total();
+void list();
 
 char month[10];
 int day;
 int income;
 int expense;
-int pro_or_los;
 int biriyani;
+int pro_or_los;
 int normal_rice;
 int given_data_income;
 int exp_to_buy_product_for_cooking;
@@ -92,15 +94,11 @@ void user_input(){
             sleep(3);
             printf("All your data are stored ina csv file");
             sleep(5);
-
         }else{
             printf("Invalid Input!");
             printf("else worked");
             exit(1);
         }
-
-
-
     }else{
         printf("Invaild Input");
         exit(1);
@@ -127,7 +125,6 @@ void response(int profit){
     }
 }
 
-
 /*all the function above are used to give the user the data from the csv etc*/
 
 void help(){
@@ -135,6 +132,7 @@ void help(){
     printf("list      - list all the details about every days\n");
     printf("search    - You can serach with the data to look for specific day details\n");
     printf("previous  - It will show the details of the previous day\n");
+    printf("total     - It will show the total profit or loss to get\n");
     printf("exit      - To exit this program\n");
     printf("cls/clear - To clear the screen\n");
     printf("help      - To view this\n");
@@ -146,13 +144,43 @@ void list(){
         perror("Error opening file");
         exit(EXIT_FAILURE);
     }
+    HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+    int colorIndex = 16 + (36 * 7) + (6 * 0) + 0;
     printf("\tMonth\tDay\tIncome\tExpense\tProfit/Loss\n");
     while (fscanf(fpointer, "%9[^,],%d,%d,%d,%d\n", month, &day, &income, &expense, &pro_or_los) == 5) {
-        printf("\t%s\t%d\t%d\t%d\t%d\n", month, day, income, expense, pro_or_los);
+        printf("\t%s\t%d\t%d\t%d\t", month, day, income, expense);
+        // Check if profit is negative
+        if (pro_or_los < 0) {
+            SetConsoleTextAttribute(hConsole, colorIndex);
+        }
+        // Print the Profit/Loss value
+        printf("%d\n", pro_or_los);
+
+        // Reset color if changed
+        if (pro_or_los < 0) {
+            SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
+        }
+    }
+    fclose(fpointer);
+}
+
+void total() {
+    int individual_profit;
+    int total_profit = 0;
+    FILE *fpointer = fopen("day_details.csv", "r");
+
+    if (fpointer == NULL) {
+        perror("Error opening file: ");
+        sleep(4);
+        exit(EXIT_FAILURE);
     }
 
+    while (fscanf(fpointer, "%*[^,],%*d,%*d,%*d,%d\n", &individual_profit) == 1) {
+        total_profit += individual_profit;
+    }
 
     fclose(fpointer);
+    printf("Total profit/Loss of this entire time: %d\n", total_profit);
 }
 
 void command_line(){
@@ -175,8 +203,12 @@ void command_line(){
             #else
                 system("clear");
             #endif
+        }else if(strcmp(command, "total")==SUCCESS){
+            total();
         }else{
             printf("Invalid Command!\n");
         }
     }
 }
+
+
