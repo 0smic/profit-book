@@ -25,7 +25,7 @@ Profit Book is a simple command-line tool to track daily income, expenses, and p
 
 2. Navigate to the project directory:
    ```bash
-   cd profit-book
+   cd profit-book/src
 
 3. Compile the Code
    ```bash
@@ -40,8 +40,10 @@ Profit Book is a simple command-line tool to track daily income, expenses, and p
 
 ### Commands
 
-- list: Display a list of all past entries.
-- total: Check the total profit or loss.
-- clear or cls: Clear the screen.
-- help: Display available commands.
-- exit: Exit the program.
+- list     : View basic details of each recorded day.
+- total    : View the total profit or loss over all recorded days.
+- highest  : View the day with the highest profit.
+- lowest   : View the day with the lowest profit.
+- elaborate: View detailed information for each recorded day.
+- search   : Search for specific day details based on month, date, or both.
+- help     : Display a list of available commands
