@@ -1,3 +1,10 @@
+// Copyright (c) 2023 Gokul B
+// Distributed under the MIT/X11 software license, see the accompanying
+// http://www.opensource.org/licenses/mit-license.php.
+
+
+
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
@@ -5,20 +12,22 @@
 #include <string.h>
 #include <windows.h>
 
-#define AMOUNT_PAID_CHIEF 1400
 #define BIRIYANI_PRICE 110
 #define RICE_PRICE 50
 
 enum basic{SUCCESS = 0, FAILURE = 1};
 
-void file_write(char[], int,int,int,int);
+void file_write(char[],int,int,int,int,int,int,int,int);
 void user_input();
-int expense_func();
 void response(int);
 void help();
 void command_line();
 void total();
 void list();
+void highest();
+void lowest();
+void elaborate();
+void search();
 
 char month[10];
 int day;
@@ -27,7 +36,9 @@ int expense;
 int biriyani;
 int pro_or_los;
 int normal_rice;
+int paid_for_chief;
 int given_data_income;
+int am_for_cooking_ingredient;
 int exp_to_buy_product_for_cooking;
 
 
@@ -36,13 +47,13 @@ int main(){
     return 0;
 }
 
-void file_write(char month[], int day, int income,int expense,int pro_or_los){
+void file_write(char month[], int day, int briyani_soled, int normal_rice_soled, int income, int paid_for_chief, int am_for_cooking_ingredient,int expense,int pro_or_los){
     FILE *fpointer = fopen("day_details.csv", "a");
     if (fpointer == NULL){
         perror("Error opening file");
         exit(EXIT_FAILURE);
     }
-    fprintf(fpointer, "%s,%d,%d,%d,%d\n",month,day,income,expense,pro_or_los);
+    fprintf(fpointer, "%s,%d,%d,%d,%d,%d,%d,%d,%d\n",month,day,briyani_soled,normal_rice_soled,income,paid_for_chief,am_for_cooking_ingredient,expense,pro_or_los);
     fclose(fpointer);
 
 }
@@ -61,39 +72,44 @@ void user_input(){
         scanf("%s", month);
         printf("Enter the day: ");
         scanf("%d", &day);
+        printf("Enter the amount paid to the cheif: ");
+        scanf("%d", &paid_for_chief);
+        printf("Enter amount used to buy cooking ingredient: ");
+        scanf("%d", &am_for_cooking_ingredient);
         printf("Enter amount of  biriyani selled: ");
         scanf("%d", &biriyani);
         printf("Enter amount of normal rice selled: ");
         scanf("%d", &normal_rice);
         given_data_income =  (biriyani*BIRIYANI_PRICE) + (normal_rice*RICE_PRICE);
-        printf("Total income get from biriyania and rice: %d \n", given_data_income);
+        printf("Total income get from biriyani and rice: %d \n", given_data_income);
         printf("Is \"%d\" is the actually total income (y/n): ", given_data_income);
         scanf("%s", temp);
         if(strcmp(temp, "y")==0){
             income = given_data_income;
-            expense = expense_func();
+            expense = paid_for_chief + am_for_cooking_ingredient;
             pro_or_los = income - expense;
-            file_write(month,day,income,expense,pro_or_los);
+            file_write(month,day,biriyani,normal_rice,income,paid_for_chief,am_for_cooking_ingredient,expense,pro_or_los);
             printf("Your profit of the day : %d \n", pro_or_los);
             sleep(2);
             response(pro_or_los);
             sleep(3);
-            printf("Call your data are stored ina csv file");
+            printf("All your data are stored in a csv file");
             sleep(5);
 
 
         }else if(strcmp(temp,"n")==0){
             printf("Enter the total amount of income: ");
             scanf("%d", &income);
-            expense = expense_func();
+            expense = paid_for_chief + am_for_cooking_ingredient;
             pro_or_los = income - expense;
-            file_write(month,day,income,expense,pro_or_los);
+            file_write(month,day,biriyani,normal_rice,income,paid_for_chief,am_for_cooking_ingredient,expense,pro_or_los);
             printf("Your profit of the day : %d \n", pro_or_los);
             sleep(2);
             response(pro_or_los);
             sleep(3);
             printf("All your data are stored ina csv file");
             sleep(5);
+
         }else{
             printf("Invalid Input!");
             printf("else worked");
@@ -105,13 +121,6 @@ void user_input(){
     }
     sleep(2);
 }
-
-int expense_func(){
-    printf("Enter the amount to product bought for cooking: ");
-    scanf("%d", &exp_to_buy_product_for_cooking);
-    return AMOUNT_PAID_CHIEF + exp_to_buy_product_for_cooking;
-}
-
 
 void response(int profit){
     if(profit < 0){
@@ -125,14 +134,17 @@ void response(int profit){
     }
 }
 
+
 /*all the function above are used to give the user the data from the csv etc*/
 
 void help(){
     printf("Here is the possible command to check the data from csv\n");
     printf("list      - list all the details about every days\n");
+    printf("elaborate - It will give the more details list of every day\n");
     printf("search    - You can serach with the data to look for specific day details\n");
-    printf("previous  - It will show the details of the previous day\n");
     printf("total     - It will show the total profit or loss to get\n");
+    printf("highest   - To view the highest profited day and amount\n");
+    printf("lowest    - To view the lowest profited day and amount\n");
     printf("exit      - To exit this program\n");
     printf("cls/clear - To clear the screen\n");
     printf("help      - To view this\n");
@@ -144,15 +156,19 @@ void list(){
         perror("Error opening file");
         exit(EXIT_FAILURE);
     }
+    rewind(fpointer);
     HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
     int colorIndex = 16 + (36 * 7) + (6 * 0) + 0;
     printf("\tMonth\tDay\tIncome\tExpense\tProfit/Loss\n");
-    while (fscanf(fpointer, "%9[^,],%d,%d,%d,%d\n", month, &day, &income, &expense, &pro_or_los) == 5) {
+    while (fscanf(fpointer, "%9[^,],%d,%d,%*d,%*d,%*d,%*d,%d,%d\n", month, &day, &income, &expense, &pro_or_los) == 5) {
+
+
         printf("\t%s\t%d\t%d\t%d\t", month, day, income, expense);
         // Check if profit is negative
         if (pro_or_los < 0) {
             SetConsoleTextAttribute(hConsole, colorIndex);
         }
+
         // Print the Profit/Loss value
         printf("%d\n", pro_or_los);
 
@@ -175,12 +191,176 @@ void total() {
         exit(EXIT_FAILURE);
     }
 
-    while (fscanf(fpointer, "%*[^,],%*d,%*d,%*d,%d\n", &individual_profit) == 1) {
+    while (fscanf(fpointer, "%*[^,],%*d,%*d,%*d,%*d,%*d,%*d,%*d,%d\n", &individual_profit) == 1) {
         total_profit += individual_profit;
     }
 
     fclose(fpointer);
     printf("Total profit/Loss of this entire time: %d\n", total_profit);
+}
+
+void highest(){
+    int max_profit = 0;
+    char max_month[10] = "";
+    int max_day = 0;
+    int current_profit = 0;
+    char current_month[10] = "";
+    int current_day = 0;
+    FILE * fpointer = fopen("day_details.csv", "r");
+    if(fpointer == NULL){
+        perror("Error opening file");
+        exit(EXIT_FAILURE);
+    }
+    while(fscanf(fpointer, "%9[^,],%d,%*d,%*d,%*d,%*d,%*d,%*d,%d\n",current_month,&current_day, &current_profit) == 3){
+        if (max_profit < current_profit){
+            max_profit = current_profit;
+            max_day = current_day;
+            strcpy(max_month, current_month);
+        }
+
+    }
+    printf("The most profited day is %s %d amount = %d\n", max_month,max_day,max_profit);
+    fclose(fpointer);
+}
+
+void lowest(){
+    int min_profit = __INT_MAX__;
+    char min_month[10] = "";
+    int min_day = 0;
+    int current_profit = 0;
+    char current_month[10] = "";
+    int current_day = 0;
+ 
+    FILE * fpointer = fopen("day_details.csv", "r");
+    if(fpointer == NULL){
+        perror("Error opening file");
+        exit(EXIT_FAILURE);
+    }
+    while(fscanf(fpointer, "%10[^,],%d,%*d,%*d,%*d,%*d,%*d,%*d,%d\n",current_month,&current_day, &current_profit) == 3){
+        if (min_profit > current_profit){
+            min_profit = current_profit;
+            min_day = current_day;
+            strcpy(min_month, current_month);
+        }
+
+    }
+    printf("The minimum profited day is %s %d amount = %d\n", min_month,min_day,min_profit);
+    fclose(fpointer);
+}
+void elaborate() {
+    FILE *fpointer = fopen("day_details.csv", "r");
+    if (fpointer == NULL) {
+        perror("Error opening file");
+        exit(EXIT_FAILURE);
+    }
+    HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+    int colorIndex = 16 + (36 * 7) + (6 * 0) + 0;
+    
+    // Move the file pointer to the beginning
+    fseek(fpointer, 0, SEEK_SET);
+
+    printf("\tMonth\tDay\tBriyani Soled\tNormal Rice Soled\tIncome\tPaid for Chief\tAmount for Cooking\tExpense\tProfit/Loss\n");
+    
+    while (fscanf(fpointer, "%10[^,],%d,%d,%d,%d,%d,%d,%d,%d\n", month, &day, &biriyani, &normal_rice, &income, &paid_for_chief, &am_for_cooking_ingredient, &expense, &pro_or_los) == 9) {
+        printf("\t%s\t%d\t\t%d\t\t%d\t\t%d\t\t%d\t\t%d\t\t%d\t", month, day, biriyani, normal_rice, income, paid_for_chief, am_for_cooking_ingredient, expense);
+
+        // Check if profit is negativen
+        if (pro_or_los < 0) {
+            SetConsoleTextAttribute(hConsole, colorIndex);
+        }
+
+        // Print the Profit/Loss value
+        printf("%d\n", pro_or_los);
+
+        // Reset color if changed
+        if (pro_or_los < 0) {
+            SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
+        }
+    }
+
+    fclose(fpointer);
+}
+
+void search(){
+    int temp_input;
+    char entered_month[10];
+    int entered_date;
+    HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+    int colorIndex = 16 + (36 * 7) + (6 * 0) + 0;
+    printf("How would you like to search with (month and date) or month or date (1/2/3) :");
+    scanf("%d", &temp_input);
+    if(temp_input == 1){
+        printf("Enter the month: ");
+        scanf("%s", entered_month);
+        printf("Enter the date: ");
+        scanf("%d", &entered_date);
+
+        FILE * fpointer = fopen("day_details.csv", "r");
+        if(fpointer == NULL){
+            perror("Error opening file");
+            exit(EXIT_FAILURE);
+        }
+        while(fscanf(fpointer, "%10[^,],%d,%d,%d,%d,%d,%d,%d,%d\n",month,&day,&biriyani,&normal_rice,&income,&paid_for_chief,&am_for_cooking_ingredient,&expense,&pro_or_los) == 9){
+            if(strcmp(entered_month, month)==SUCCESS && entered_date == day){
+                printf("\tMonth\tDay\tBriyani Soled\tNormal Rice Soled\tIncome\tPaid for Chief\tAmount for Cooking\tExpense\tProfit/Loss\n");
+                printf("\t%s\t%d\t\t%d\t\t%d\t\t%d\t\t%d\t\t%d\t\t%d\t", month, day, biriyani, normal_rice, income, paid_for_chief, am_for_cooking_ingredient, expense);
+                        // Check if profit is negativen
+                if (pro_or_los < 0) {
+                    SetConsoleTextAttribute(hConsole, colorIndex);
+                }
+                printf("%d\n", pro_or_los);
+                if (pro_or_los < 0) {
+                    SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
+                }
+            }
+        }
+
+    }else if(temp_input==2){
+        printf("Enter the Month: ");
+        scanf("%s", entered_month);
+        FILE * fpointer = fopen("day_details.csv", "r");
+        if(fpointer == NULL){
+            perror("Error opening file");
+            exit(EXIT_FAILURE);
+        }
+        printf("\tMonth\tDay\tBriyani Soled\tNormal Rice Soled\tIncome\tPaid for Chief\tAmount for Cooking\tExpense\tProfit/Loss\n");
+        while(fscanf(fpointer, "%10[^,],%d,%d,%d,%d,%d,%d,%d,%d\n",month,&day,&biriyani,&normal_rice,&income,&paid_for_chief,&am_for_cooking_ingredient,&expense,&pro_or_los) == 9){
+            if(strcmp(entered_month, month)==SUCCESS){
+                printf("\t%s\t%d\t\t%d\t\t%d\t\t%d\t\t%d\t\t%d\t\t%d\t", month, day, biriyani, normal_rice, income, paid_for_chief, am_for_cooking_ingredient, expense);
+                        // Check if profit is negativen
+                if (pro_or_los < 0) {
+                    SetConsoleTextAttribute(hConsole, colorIndex);
+                }
+                printf("%d\n", pro_or_los);
+                if (pro_or_los < 0) {
+                    SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
+                }
+            }
+        }   
+    }else if(temp_input == 3){
+        printf("Enter the Day: ");
+        scanf("%d", &entered_date);
+
+        FILE * fpointer = fopen("day_details.csv", "r");
+        if(fpointer == NULL){
+            perror("Error opening file");
+            exit(EXIT_FAILURE);
+        }
+        while(fscanf(fpointer, "%10[^,],%d,%d,%d,%d,%d,%d,%d,%d\n",month,&day,&biriyani,&normal_rice,&income,&paid_for_chief,&am_for_cooking_ingredient,&expense,&pro_or_los) == 9){
+            if(entered_date==day){
+                printf("\tMonth\tDay\tBriyani Soled\tNormal Rice Soled\tIncome\tPaid for Chief\tAmount for Cooking\tExpense\tProfit/Loss\n");
+                printf("\t%s\t%d\t\t%d\t\t%d\t\t%d\t\t%d\t\t%d\t\t%d\t", month, day, biriyani, normal_rice, income, paid_for_chief, am_for_cooking_ingredient, expense);
+                        // Check if profit is negativen
+                if (pro_or_los < 0) {
+                    SetConsoleTextAttribute(hConsole, colorIndex);
+                }
+                printf("%d\n", pro_or_los);
+                if (pro_or_los < 0) {
+                    SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
+                }
+            }
+        }
+    }
 }
 
 void command_line(){
@@ -205,10 +385,17 @@ void command_line(){
             #endif
         }else if(strcmp(command, "total")==SUCCESS){
             total();
-        }else{
+        }else if(strcmp(command, "highest")==SUCCESS){
+            highest();
+        }else if(strcmp(command, "lowest")==SUCCESS){
+            lowest();
+        }else if(strcmp(command, "elaborate")==SUCCESS){
+            elaborate();
+        }else if(strcmp(command, "search")==SUCCESS){
+            search();
+        }
+        else{
             printf("Invalid Command!\n");
         }
     }
 }
-
-
