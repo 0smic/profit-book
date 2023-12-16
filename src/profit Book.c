@@ -3,8 +3,7 @@
 // http://www.opensource.org/licenses/mit-license.php.
 
 
-
-
+#include "display.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
@@ -29,6 +28,8 @@ void lowest();
 void elaborate();
 void search();
 
+/*CSV FORMAT
+  month, day,biriyani_soled, normal_nice_soled, income, paid_of_chief, am_for_cooking_ingredient, expense, pro_or_los*/
 char month[10];
 int day;
 int income;
@@ -43,6 +44,7 @@ int exp_to_buy_product_for_cooking;
 
 
 int main(){
+    start_design();
     user_input();
     return 0;
 }
@@ -115,6 +117,9 @@ void user_input(){
             printf("else worked");
             exit(1);
         }
+
+
+
     }else{
         printf("Invaild Input");
         exit(1);
@@ -160,7 +165,7 @@ void list(){
     HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
     int colorIndex = 16 + (36 * 7) + (6 * 0) + 0;
     printf("\tMonth\tDay\tIncome\tExpense\tProfit/Loss\n");
-    while (fscanf(fpointer, "%9[^,],%d,%d,%*d,%*d,%*d,%*d,%d,%d\n", month, &day, &income, &expense, &pro_or_los) == 5) {
+    while (fscanf(fpointer, "%9[^,],%d,%*d,%*d,%d,%*d,%*d,%d,%d\n", month, &day, &income, &expense, &pro_or_los) == 5) {
 
 
         printf("\t%s\t%d\t%d\t%d\t", month, day, income, expense);
@@ -177,6 +182,9 @@ void list(){
             SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
         }
     }
+
+
+
     fclose(fpointer);
 }
 
@@ -361,6 +369,7 @@ void search(){
             }
         }
     }
+
 }
 
 void command_line(){
@@ -399,3 +408,5 @@ void command_line(){
         }
     }
 }
+
+
