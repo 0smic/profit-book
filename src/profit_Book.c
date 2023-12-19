@@ -2,7 +2,6 @@
 // Distributed under the MIT/X11 software license, see the accompanying
 // http://www.opensource.org/licenses/mit-license.php.
 
-
 #include "display.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -41,7 +40,11 @@ int paid_for_chief;
 int given_data_income;
 int am_for_cooking_ingredient;
 int exp_to_buy_product_for_cooking;
-
+int invest_day;
+int invest_year;
+int invest_amount;
+char invest_month[10];
+char invester_name[10];
 
 int main(){
     start_design();
@@ -145,11 +148,13 @@ void response(int profit){
 void help(){
     printf("Here is the possible command to check the data from csv\n");
     printf("list      - list all the details about every days\n");
+    printf("lsinvest  - This list all the investment made to the bussniness\n");
     printf("elaborate - It will give the more details list of every day\n");
     printf("search    - You can serach with the data to look for specific day details\n");
     printf("total     - It will show the total profit or loss to get\n");
     printf("highest   - To view the highest profited day and amount\n");
     printf("lowest    - To view the lowest profited day and amount\n");
+    printf("invest    - Options for enter a new investment or take details of all investments\n");
     printf("exit      - To exit this program\n");
     printf("cls/clear - To clear the screen\n");
     printf("help      - To view this\n");
@@ -354,9 +359,9 @@ void search(){
             perror("Error opening file");
             exit(EXIT_FAILURE);
         }
+        printf("\tMonth\tDay\tBriyani Soled\tNormal Rice Soled\tIncome\tPaid for Chief\tAmount for Cooking\tExpense\tProfit/Loss\n");
         while(fscanf(fpointer, "%10[^,],%d,%d,%d,%d,%d,%d,%d,%d\n",month,&day,&biriyani,&normal_rice,&income,&paid_for_chief,&am_for_cooking_ingredient,&expense,&pro_or_los) == 9){
             if(entered_date==day){
-                printf("\tMonth\tDay\tBriyani Soled\tNormal Rice Soled\tIncome\tPaid for Chief\tAmount for Cooking\tExpense\tProfit/Loss\n");
                 printf("\t%s\t%d\t\t%d\t\t%d\t\t%d\t\t%d\t\t%d\t\t%d\t", month, day, biriyani, normal_rice, income, paid_for_chief, am_for_cooking_ingredient, expense);
                         // Check if profit is negativen
                 if (pro_or_los < 0) {
@@ -372,6 +377,44 @@ void search(){
 
 }
 
+
+
+
+/* The above function will take care of the investment made*/
+
+
+
+void investment_writer(char name[], int amount,int year,char month[], int day){
+    FILE * fpointer = fopen("investment.csv", "a");
+    fprintf(fpointer, "%s,%d,%d,%s,%d\n",name,amount,year,month,day);
+    fclose(fpointer);
+}
+
+void invest_list(){
+    FILE * fpointer = fopen("investment.csv","r");
+    printf("\tName\tAmount\tYear\tMonth\tDay\n");
+    while(fscanf(fpointer,"%10[^,],%d,%d,%10[^,],%d", invester_name,&invest_amount,&invest_year,invest_month,&invest_day)==5){
+        printf("\t%s\t%d\t%d\t%s\t%d\n",invester_name,invest_amount,invest_year,invest_month,invest_day);
+
+    }
+    fclose(fpointer);
+}
+
+void investment_input(){
+    printf("Enter the name of the Invester: ");
+    scanf("%s",invester_name);
+    printf("Enter the total amount invested by %s : ",invester_name);
+    scanf("%d", &invest_amount);
+    printf("Enter the year %s Invested: ", invester_name);
+    scanf("%d", &invest_year);
+    printf("Enter the month %s Invested: ",invester_name);
+    scanf("%s", invest_month);
+    printf("Enter the day %s Invested: ", invester_name);
+    scanf("%d", &invest_day);
+    investment_writer(invester_name,invest_amount,invest_year,invest_month,invest_day);
+    printf("Your Inputed Data are been stored");
+
+}
 void command_line(){
     char command[10];
     printf("Type \"help\" to see possible command\n");
@@ -402,11 +445,13 @@ void command_line(){
             elaborate();
         }else if(strcmp(command, "search")==SUCCESS){
             search();
+        }else if(strcmp(command, "invest")==SUCCESS){
+            investment_input();
+        }else if(strcmp(command, "lsinvest")==SUCCESS){
+            invest_list();
         }
         else{
             printf("Invalid Command!\n");
         }
     }
 }
-
-
