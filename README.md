@@ -29,7 +29,7 @@ Profit Book is a simple command-line tool to track daily income, expenses, and p
 
 3. Compile the Code
    ```bash
-   gcc -o profit_book profit_book.c
+   gcc profit_book.c display.c -o profit_book
 4. Run the executable:
      Execute the profit book normally like you do for others
 
