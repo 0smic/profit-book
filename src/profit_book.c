@@ -4,6 +4,7 @@
 
 #include "display.h"
 #include <stdio.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <time.h>
 #include <unistd.h>
@@ -26,6 +27,9 @@ void highest();
 void lowest();
 void elaborate();
 void search();
+void check_if_new();
+void collect_user_info();
+void user_info_write(char[],char[],char[]);
 
 /*CSV FORMAT
   month, day,biriyani_soled, normal_nice_soled, income, paid_of_chief, am_for_cooking_ingredient, expense, pro_or_los*/
@@ -45,8 +49,12 @@ int invest_year;
 int invest_amount;
 char invest_month[10];
 char invester_name[10];
+char user_name[20];
+char bussniess_name[20];
+char bussniess_explain[20];
 
 int main(){
+    check_if_new();
     start_design();
     user_input();
     return 0;
@@ -64,7 +72,10 @@ void file_write(char month[], int day, int briyani_soled, int normal_rice_soled,
 }
 void user_input(){
     char first_option[10];
-    printf("Sir, Want would you like to do\n");
+    printf("Hello , %s\n",user_name);
+    printf("Hows the %s doing today\n\n", bussniess_name);
+
+    printf("%s, Want would you like to do\n",user_name);
     printf("Take info or add info (take/add): ");
     scanf("%s", first_option);
 
@@ -377,12 +388,7 @@ void search(){
 
 }
 
-
-
-
 /* The above function will take care of the investment made*/
-
-
 
 void investment_writer(char name[], int amount,int year,char month[], int day){
     FILE * fpointer = fopen("investment.csv", "a");
@@ -454,4 +460,48 @@ void command_line(){
             printf("Invalid Command!\n");
         }
     }
+}
+
+/*All the function above are used for user information*/
+
+void user_info_write(char name[],char bussniess_name[],char bussniess_explain[]){
+    FILE * fpointer = fopen("user_info.csv","a");
+    fprintf(fpointer, "%s,%s,%s\n", name,bussniess_name,bussniess_explain);
+    fclose(fpointer);
+}
+
+void collect_user_info(){
+    printf("\tWelcome to profit Book\n");
+    printf("Enter Your name: ");
+    scanf("%s",user_name);
+    printf("Enter You Bussniess name: ");
+    scanf("%s", bussniess_name);
+    printf("What type of Bussniess, explain in one word: ");
+    scanf("%s", bussniess_explain);
+    user_info_write(user_name,bussniess_name,bussniess_explain);
+
+}
+void check_if_new(){
+    int temp_int=0;
+    FILE * fpointer = fopen("user_info.csv", "r");
+    if (fpointer == NULL){
+        FILE * fpointer_dup = fopen("user_info.csv", "a");
+        fclose(fpointer_dup);
+        collect_user_info();
+        printf("\n");
+    }else{
+            while(fscanf(fpointer, "%20[^,],%20[^,],%20[^,]\n", user_name,bussniess_name,bussniess_explain)==3){
+                temp_int++;
+            }
+            printf("%d",temp_int);
+            if(temp_int==0){
+                collect_user_info();
+            }
+            if(temp_int>1){
+                printf("\nError occured in the user_info.csv");
+                sleep(3);
+                exit(EXIT_FAILURE);
+            }
+    }
+    fclose(fpointer);
 }
